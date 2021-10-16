@@ -336,7 +336,7 @@ const calculateCharge = (occupant, parkingSlot) => {
     console.log("prevDiffHours: " + prevDiffHours);
     let sumDiffHours = prevDiffHours + currentDiffHours;
     console.log("sumDiffHours: " + sumDiffHours);
-    let awayHours = 
+
     if (getDiffHours(lastTimeOut, timeIn) == 1){ // occupant was only away less than an hour
       return getHourlyValue(size, sumDiffHours) - getHourlyValue(size, prevDiffHours); // subtract previous payment
     }
