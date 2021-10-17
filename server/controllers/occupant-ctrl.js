@@ -153,7 +153,7 @@ getOccupantByPlateNum = async (req, res) => {
                 .json({ success: false, error: `getOccupantByPlateNum() : Occupant not found!` })
         }
         return res.status(200).json({ success: true, data: occupant })
-    }).catch(err => console.log(err))
+    }).clone().catch(err => console.log(err))
 }
 
 getOccupants = async (req, res) => {
@@ -163,11 +163,11 @@ getOccupants = async (req, res) => {
         }
         if (!occupants.length) {
             return res
-                .status(404)
+                .status(200)
                 .json({ success: false, error: `getOccupants() : Empty list` })
         }
         return res.status(200).json({ success: true, data: occupants })
-    }).clone().catch(err => console.log(err))
+    }).sort({plateNum: "asc"}).clone().catch(err => console.log(err))
 }
 
 module.exports = {
