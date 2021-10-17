@@ -123,7 +123,7 @@ deleteOccupant = async (req, res) => {
         }
 
         return res.status(200).json({ success: true, data: occupant })
-    }).catch(err => console.log(err))
+    }).clone().catch(err => console.log(err))
 }
 
 getOccupantById = async (req, res) => {
@@ -134,11 +134,11 @@ getOccupantById = async (req, res) => {
 
         if (!occupant) {
             return res
-                .status(404)
+                .status(200)
                 .json({ success: false, error: `getOccupantById() : Occupant not found!` })
         }
         return res.status(200).json({ success: true, data: occupant })
-    }).catch(err => console.log(err))
+    }).clone().catch(err => console.log(err))
 }
 
 getOccupantByPlateNum = async (req, res) => {
@@ -149,7 +149,7 @@ getOccupantByPlateNum = async (req, res) => {
 
         if (!occupant) {
             return res
-                .status(404)
+                .status(200)
                 .json({ success: false, error: `getOccupantByPlateNum() : Occupant not found!` })
         }
         return res.status(200).json({ success: true, data: occupant })
@@ -167,7 +167,7 @@ getOccupants = async (req, res) => {
                 .json({ success: false, error: `getOccupants() : Empty list` })
         }
         return res.status(200).json({ success: true, data: occupants })
-    }).catch(err => console.log(err))
+    }).clone().catch(err => console.log(err))
 }
 
 module.exports = {

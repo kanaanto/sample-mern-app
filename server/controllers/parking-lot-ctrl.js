@@ -6,6 +6,7 @@ const MIN_ENTRY_PT_COUNT = 3;
 
 // one time
 generateParkingLot = async (req, res) => {
+  console.log("generateParkingLot()");
   const body = req.body;
   if (!body || !body.entryPointCount) {
     return res.status(400).json({
@@ -56,7 +57,6 @@ generateParkingLot = async (req, res) => {
       currentArray.push(slotNumber++); // build map/matrix
     }
     slotMap.push(currentArray);
-    console.log(entryPoint+1 + "[" + currentArray + "]");
   }
   // mass parking slot insertion
   ParkingSlot.insertMany(parkingSlots)
@@ -97,6 +97,7 @@ generateParkingLot = async (req, res) => {
 }
 
 deleteParkingLot = async (req, res) => {
+  console.log("deleteParkingLot()");
   // delete all parking slots
   ParkingSlot.deleteMany({}, (err) => {
     if (err) {
@@ -105,7 +106,7 @@ deleteParkingLot = async (req, res) => {
         message: err
       })
     }
-  }).catch(err => console.log(err))
+  }).clone().catch(err => console.log(err))
   // delete settings
   ParkingLot.deleteMany({}, (err) => {
     if (err) {
@@ -114,7 +115,7 @@ deleteParkingLot = async (req, res) => {
         message: err
       })
     }
-  }).catch(err => console.log(err))
+  }).clone().catch(err => console.log(err))
 
   return res.status(200).json({
     success: true,
@@ -122,8 +123,18 @@ deleteParkingLot = async (req, res) => {
   })
 }
 
-getParkingSlots = (req, res) => {
-  ParkingSlot.find({}, (err, parkingSlots) => {
+getParkingLotSettings = async (req, res) => {
+  console.log("getParkingLotSettings()");
+  const settings = await ParkingLot.find({}).exec();
+  return res.status(200).json({
+    success: true,
+    settings
+  });
+}
+
+getParkingSlots =  (req, res) => {
+  console.log("getParkingSlots()");
+   ParkingSlot.find({}, (err, parkingSlots) => {
     if (err) {
       return res.status(400).json({
         success: false,
@@ -142,10 +153,11 @@ getParkingSlots = (req, res) => {
       success: true,
       data: parkingSlots
     })
-  }).catch(err => console.log(err))
+  }).clone().catch(err => console.log(err))
 }
 
 const occupySlot = async (req, res) => {
+  console.log("occupySlot()");
   const body = req.body // req.body should contain: entryPoint, occupant
   if (!body) {
     return res.status(400).json({
@@ -159,6 +171,9 @@ const occupySlot = async (req, res) => {
   }
   // get available slot
   let availableSlot = await getClosestAvailableSlot(parseInt(body.entryPoint), body.occupant);
+  if(availableSlot < 0){ // no more available slot
+    return res.status(200).json({success: true, message: `occupySlot() : There are no more available slots :(`});
+  }
   // update parking slot
   try {
     const data = {
@@ -173,8 +188,9 @@ const occupySlot = async (req, res) => {
     return res.status(404).json({success: false,  message: `occupySlot() : Error in updating slot [${availableSlot}] because ` + err});
   }
 }
-// todo: update lastTimein and lastTimeout after unoccupy
+
 const unoccupySlot = async (req, res) => {
+  console.log("unoccupySlot()");
   const body = req.body
   if (!body) {
     return res.status(400).json({
@@ -182,29 +198,40 @@ const unoccupySlot = async (req, res) => {
       message: 'You must provide a body to update',
     })
   }
-  const parkingSlot = await ParkingSlot.findOne({number: body.slotNumber}).exec();
-  const occupant = new Occupant(body.occupant);
+
   // calculate charges
   try {
-    let totalCharge = await calculateCharge(occupant, parkingSlot);
+    const parkingSlot = new ParkingSlot(body);
+    const occupant = await Occupant.findOne({"_id" : body.occupant._id}).exec();
+
+    let totalHours = await getTotalOccupancyHours(occupant, parkingSlot);
+    let totalCharge = 0;
+    let userHours = 0; // number of hours to display to users
+
+    if (totalHours.sumDiffHours && totalHours.prevDiffHours) { // occupant came back in less than an hour
+      console.log("unoccupySlot() : occupant returned in less than an hour. recomputing. ");
+      totalCharge = getTotalCharge(parkingSlot.size, totalHours.sumDiffHours) - getTotalCharge(parkingSlot.size, totalHours.prevDiffHours); // subtract previous payment
+    } else { // usual computations
+      totalCharge = getTotalCharge(parkingSlot.size, totalHours.currentDiffHours);
+    }
     // update parking slot
     let results = await updateParkingSlot({
       occupied: false,
       occupant: {},
       timeIn: ""
-    }, body.slotNumber);
+    }, parkingSlot.number);
     return res.status(200).json({
       success: true,
-      message: `unoccupySlot() : Slot [${body.slotNumber}] is now unoccupied!`,
+      message: `unoccupySlot() : Slot [${parkingSlot.number}] is now unoccupied!\n - Total hours: ${totalHours.currentDiffHours}\n - Total charge: ${totalCharge}`,
       totalCharge
     });
   } catch (err) {
-      return res.status(404).json({success: false,  message: `unoccupySlot() : Error in calculating charges and updating slot [${availableSlot}] because ` + err});
+    return res.status(404).json({success: false,  message: `unoccupySlot() : Error in calculating charges because ` + err});
   }
-
 }
 
 const updateParkingSlot = async (body, slotNumber) => {
+  console.log("updateParkingSlot()");
   ParkingSlot.findOne({
     number: slotNumber
   }, (err, parkingSlot) => {
@@ -234,6 +261,7 @@ const validateOccupant = async (occupant) => {
 }
 
 const getParkingSlotById = async (req, res) => {
+  console.log("getParkingSlotById()");
   ParkingSlot.findOne({
     _id: req.params.id
   }, (err, parkingSlot) => {
@@ -260,6 +288,7 @@ const getParkingSlotById = async (req, res) => {
 }
 
 const getClosestAvailableSlot = async (entryPoint, occupant) => {
+  console.log("getClosestAvailableSlot()");
   let allowedSizes = [2];
   switch (occupant.carType) {
     case 0: allowedSizes.push(0);
@@ -268,12 +297,6 @@ const getClosestAvailableSlot = async (entryPoint, occupant) => {
   const settings = await ParkingLot.find({}).exec();
   var availableSlots = await ParkingSlot.find({ size: { $in: allowedSizes }, occupied: false }).select({ number: 1, _id: 0}).sort({number: "asc"}).exec();
   availableSlots = availableSlots.map(slot => slot.number); // extract slot numbers
-  console.log("slotPerEntry: " + settings[0].slotPerEntry);
-  console.log("slotCount: " + settings[0].slotCount);
-  console.log("entryPointCount: " + settings[0].entryPointCount);
-  console.log("availableSlots: " + availableSlots);
-  console.log("allowedSizes: " + allowedSizes);
-  console.log("entryPoint: " + entryPoint);
   // starting point is based on entry point
   return breadthFirstSearch(settings[0].slotMap, [entryPoint, 0], availableSlots);
 }
@@ -281,10 +304,10 @@ const getClosestAvailableSlot = async (entryPoint, occupant) => {
 const breadthFirstSearch = (grid, pivot, availableSlots) => {
   let children = (pivot, grid) => {
     let connectedCells = [
-      [pivot[0] - 1, pivot[1]],
-      [pivot[0], pivot[1] - 1],
-      [pivot[0] + 1, pivot[1]],
-      [pivot[0], pivot[1] + 1]
+      [pivot[0] - 1, pivot[1]], // left
+      [pivot[0], pivot[1] - 1], // top
+      [pivot[0] + 1, pivot[1]], // right
+      [pivot[0], pivot[1] + 1]  // down
     ];
 
     const validCells = connectedCells.filter((cell) => (
@@ -316,35 +339,38 @@ const breadthFirstSearch = (grid, pivot, availableSlots) => {
       }
     }
   }
+  return -1;
 }
 
 const getDiffHours = (fromDate, toDate) => {
   return Math.ceil(Math.abs(fromDate.getTime() - toDate.getTime()) / 3600000);
 }
 
-const calculateCharge = (occupant, parkingSlot) => {
+const getTotalOccupancyHours = (occupant, parkingSlot) => {
+  const occupancyDetails = [];
   const size = parkingSlot.size;
   const timeIn = new Date(parkingSlot.timeIn);
   const timeOut = new Date();
   const currentDiffHours = getDiffHours(timeIn, timeOut);
-  console.log("currentDiffHours: " + currentDiffHours);
   // case where occupant is a returning occupant
   if (occupant.lastTimeIn && occupant.lastTimeOut){
     let lastTimeOut = new Date(occupant.lastTimeOut);
     let lastTimeIn = new Date(occupant.lastTimeIn);
     let prevDiffHours = getDiffHours(lastTimeIn, lastTimeOut);
-    console.log("prevDiffHours: " + prevDiffHours);
     let sumDiffHours = prevDiffHours + currentDiffHours;
-    console.log("sumDiffHours: " + sumDiffHours);
 
     if (getDiffHours(lastTimeOut, timeIn) == 1){ // occupant was only away less than an hour
-      return getHourlyValue(size, sumDiffHours) - getHourlyValue(size, prevDiffHours); // subtract previous payment
+      return {
+        currentDiffHours,
+        sumDiffHours,
+        prevDiffHours
+      }
     }
   }
-  return getHourlyValue(size, currentDiffHours);
+  return { currentDiffHours };
 }
 
-const getHourlyValue = (size, hours) => {
+const getTotalCharge = (size, hours) => {
   var sum = 40;
   if (hours <= 3) {
     return sum;
@@ -363,7 +389,6 @@ const getHourlyValue = (size, hours) => {
     case 1: sum += 60 * hours; break;
     case 2: sum += 100 * hours; break;
   }
-  console.log("sum: " + sum);
   return sum;
 }
 
@@ -371,6 +396,7 @@ module.exports = {
   generateParkingLot,
   deleteParkingLot,
   getParkingSlots,
+  getParkingLotSettings,
   occupySlot, // park
   unoccupySlot, // unpark
 }

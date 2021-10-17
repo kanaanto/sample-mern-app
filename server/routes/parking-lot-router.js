@@ -7,6 +7,7 @@ const router = express.Router()
 router.post('/parking-lot/generate', ParkingLotCtrl.generateParkingLot)
 router.delete('/parking-lot/deleteAll', ParkingLotCtrl.deleteParkingLot)
 router.get('/parking-lot', ParkingLotCtrl.getParkingSlots)
+router.get('/parking-lot/settings', ParkingLotCtrl.getParkingLotSettings)
 // parking slot
 router.put('/parking-lot/park', ParkingLotCtrl.occupySlot)
 router.put('/parking-lot/unpark', ParkingLotCtrl.unoccupySlot)
