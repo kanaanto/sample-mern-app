@@ -152,6 +152,9 @@ class OccupantList extends Component {
                         minRows={0}
                     />
                 )}
+                {
+                  !showTable && ("Occupant list is empty!")
+                }
             </Wrapper>
         )
     }
