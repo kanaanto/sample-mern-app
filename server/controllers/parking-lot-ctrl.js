@@ -126,10 +126,18 @@ deleteParkingLot = async (req, res) => {
 getParkingLotSettings = async (req, res) => {
   console.log("getParkingLotSettings()");
   const settings = await ParkingLot.find({}).exec();
-  return res.status(200).json({
-    success: true,
-    settings
-  });
+  if(settings) {
+    return res.status(200).json({
+      success: true,
+      settings
+    });
+  } else {
+    return res.status(200).json({
+      success: false,
+      message: "getParkingLotSettings () : empty parking lot!"
+    });
+  }
+
 }
 
 getParkingSlots =  (req, res) => {

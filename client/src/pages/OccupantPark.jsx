@@ -29,6 +29,10 @@ const createOption = (label, carType) => ({
   value: label.toUpperCase().replace(/\W/g, ''),
 });
 
+const defaultOptions = [
+  createOption('', 0)
+];
+
 const Title = styled.h1.attrs({
     className: 'h1',
 })``
@@ -66,7 +70,7 @@ class OccupantPark extends Component{
       super(props);
       this.state = {
         isLoading: false,
-        plateNumList: {},
+        plateNumList: defaultOptions,
         plateNum: '',
         carType: '',
         entryPoint: '',
@@ -77,8 +81,9 @@ class OccupantPark extends Component{
   componentDidMount = async () => {
     this.setState({ isLoading: true });
     await api.getOccupants().then(res => {
+      let plateNumList = (res.data.data) ? (res.data.data).map(a => createOption(a.plateNum, a.carType)): {};
       this.setState({
-          plateNumList: (res.data.data).map(a => createOption(a.plateNum, a.carType)),
+          plateNumList
       })
     });
     await api.getParkingLotSettings().then(res => {
@@ -86,7 +91,7 @@ class OccupantPark extends Component{
           settings: res.data.settings,
           isLoading: false,
       })
-    })
+    });
   }
 
   handleChangeInputCarType = async event => {
