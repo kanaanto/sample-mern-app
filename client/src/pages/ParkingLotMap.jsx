@@ -27,13 +27,27 @@ const CancelButton = styled.a.attrs({
 `
 
 class UnoccupySlot extends Component {
+    handleUnoccupySlot = async (payload) => {
+      await api.unpark(payload).then(res => {
+        window.alert(`${res.data.message}`);
+      }).catch(err => {
+        window.alert(`an error occurred: ${JSON.stringify(err)}`);
+      });
+
+      payload.occupant.lastTimeIn = payload.timeIn;
+      payload.occupant.lastTimeOut = new Date().toISOString();
+      api.updateOccupantById(payload.occupant._id, payload.occupant); // update lastTimeIn and lastTimeOut of occupant
+      window.location.reload();
+    }
+
     unoccupySlot = event => {
-        event.preventDefault()
+        event.preventDefault();
+        let slot = this.props.data;
         if (window.confirm(
-                `Do you want to checkout occupant ${this.props.plateNum}?`,
+                `Do you want to checkout occupant ${slot.occupant.plateNum}?`,
             )
         ) {
-            api.unpark(this.props.id)
+          this.handleUnoccupySlot(slot);
         }
     }
 
@@ -108,7 +122,7 @@ class ParkingLotMap extends Component {
                   if (data.original.occupied){
                     return (
                         <span>
-                            <UnoccupySlot id={data.original._id} />
+                            <UnoccupySlot data={data.original} />
                         </span>
                     )
                   } return "";
@@ -130,7 +144,7 @@ class ParkingLotMap extends Component {
                     case 1: carType =  "Medium"; break;
                     case 2: carType =  "Large"; break;
                   }
-                  return `${plateNum} [${carType}]`;
+                  return `[${carType}] ${plateNum}`;
 
                 },
             },

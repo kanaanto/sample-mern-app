@@ -40,8 +40,8 @@ class GenerateParkingLot extends Component {
         super(props);
 
         this.state = {
-            plateNum: '',
-            carType: '',
+            entryPointCount: '',
+            slotCount: '',
         }
     }
 
@@ -88,10 +88,12 @@ class GenerateParkingLot extends Component {
             <Wrapper>
                 <Title>Generate Parking Lot Map</Title>
 
-                <Label>Number of Entry Points (min of 3): </Label>
+                <Label>Number of Entry Points: </Label>
                 <InputText
                     type="number"
+                    placeholder="Minimum value of 3"
                     value={entryPointCount}
+                    min="3"
                     onChange={this.handleChangeInputEntryPointCount}
                     required="true"
                 />
@@ -99,12 +101,14 @@ class GenerateParkingLot extends Component {
                 <Label>Number of Slots: </Label>
                 <InputText
                     type="number"
+                    placeholder="Minimum value of 6. Leave empty to randomize slot count"
                     value={slotCount}
+                    min="6"
                     onChange={this.handleChangeInputSlotCount}
                 />
 
                 <Button onClick={this.handleGenerateMap}>Generate Map</Button>
-                <CancelButton href={'/movies/list'}>Cancel</CancelButton>
+                <CancelButton href={'/parking-lot'}>Cancel</CancelButton>
             </Wrapper>
         )
     }

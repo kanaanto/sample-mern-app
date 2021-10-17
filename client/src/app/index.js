@@ -1,9 +1,8 @@
-
 import React from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 
 import { NavBar } from '../components'
-import { ParkingLotMap, GenerateParkingLot, OccupantList, OccupantCreate, OccupantUpdate } from '../pages'
+import { ParkingLotMap, GenerateParkingLot, OccupantList, OccupantPark, OccupantUpdate } from '../pages'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 
@@ -15,7 +14,7 @@ function App() {
                 <Route path="/parking-lot" exact component={ParkingLotMap} />
                 <Route path="/parking-lot/generate" exact component={GenerateParkingLot} />
                 <Route path="/occupants" exact component={OccupantList} />
-                <Route path="/occupant/create" exact component={OccupantCreate} />
+                <Route path="/occupant/create" exact component={OccupantPark} />
                 <Route
                     path="/occupant/update/:id"
                     exact

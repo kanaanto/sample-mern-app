@@ -3,6 +3,26 @@ import api from '../api'
 
 import styled from 'styled-components'
 
+const Select = styled.select`
+  width: 100%;
+  height: 35px;
+  background: white;
+  color: gray;
+  padding-left: 5px;
+  font-size: 14px;
+  border: none;
+  margin-left: 10px;
+
+  option {
+    color: black;
+    background: white;
+    display: flex;
+    white-space: pre;
+    min-height: 20px;
+    padding: 0px 2px 1px;
+  }
+`
+
 const Title = styled.h1.attrs({
     className: 'h1',
 })``
@@ -97,16 +117,13 @@ class OccupantUpdate extends Component {
               />
 
               <Label>Car Type: </Label>
-              <InputText
-                  type="number"
-                  step="0.1"
-                  lang="en-US"
-                  min="0"
-                  max="2"
-                  pattern="^[0-2]*$"
-                  value={carType}
-                  onChange={this.handleChangeInputCarType}
-              />
+              <Select
+              value={carType}
+              onChange={this.handleChangeInputCarType}>
+                <option value="0">Small</option>
+                <option value="1">Medium</option>
+                <option value="2">Large</option>
+              </Select>
 
               <Button onClick={this.handleUpdateOccupant}>Update Occupant</Button>
               <CancelButton href={'/occupants'}>Cancel</CancelButton>

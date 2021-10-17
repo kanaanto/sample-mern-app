@@ -34,15 +34,16 @@ class Links extends Component {
                             </Link>
                         </Item>
                         <Item>
+                            <Link to="/occupant/create" className="nav-link">
+                                Park
+                            </Link>
+                        </Item>
+                        <Item>
                             <Link to="/occupants" className="nav-link">
                                 List Occupants
                             </Link>
                         </Item>
-                        <Item>
-                            <Link to="/occupant/create" className="nav-link">
-                                Create Occupant
-                            </Link>
-                        </Item>
+
                     </List>
                 </Collapse>
             </React.Fragment>
