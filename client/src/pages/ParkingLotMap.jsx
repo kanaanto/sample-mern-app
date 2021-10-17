@@ -84,11 +84,8 @@ class ParkingLotMap extends Component {
                 accessor: 'entryPoint',
                 filterable: true,
                 Cell: function(data) {
-                  switch(data.original.entryPoint){
-                    case 0: return "A";
-                    case 1: return "B";
-                    case 2: return "C";
-                  }
+                  let num = parseInt(data.original.entryPoint) + 10;
+                  return (num).toString(36).toUpperCase();
                 },
             },
             {

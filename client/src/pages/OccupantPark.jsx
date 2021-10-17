@@ -69,6 +69,7 @@ class OccupantPark extends Component{
   constructor(props) {
       super(props);
       this.state = {
+        disableAll: "",
         isLoading: false,
         plateNumList: defaultOptions,
         plateNum: '',
@@ -81,16 +82,26 @@ class OccupantPark extends Component{
   componentDidMount = async () => {
     this.setState({ isLoading: true });
     await api.getOccupants().then(res => {
-      let plateNumList = (res.data.data) ? (res.data.data).map(a => createOption(a.plateNum, a.carType)): {};
-      this.setState({
-          plateNumList
-      })
+      if (res.data.success){
+        let plateNumList = (res.data.data) ? (res.data.data).map(a => createOption(a.plateNum, a.carType)): {};
+        this.setState({
+            plateNumList
+        })
+      }
     });
+
     await api.getParkingLotSettings().then(res => {
-      this.setState({
-          settings: res.data.settings,
-          isLoading: false,
-      })
+      if(res.data.success){
+        this.setState({
+            settings: res.data.settings,
+            isLoading: false,
+        });
+      } else {
+        this.setState({
+          disableAll: "disabled"
+        });
+      }
+
     });
   }
 
@@ -176,7 +187,7 @@ class OccupantPark extends Component{
   }
 
   render() {
-      const { plateNumList, plateNum, carType, entryPoint } = this.state
+      const { plateNumList, plateNum, carType, entryPoint, disableAll } = this.state
       return (
           <Wrapper>
               <Title>Occupant Parking</Title>
@@ -205,7 +216,7 @@ class OccupantPark extends Component{
                 value={entryPoint}
                 onChange={this.handleChangeInputEntryPoint}
               />
-              <Button onClick={this.handleOccupantPark}>Park</Button>
+              <Button onClick={this.handleOccupantPark} disabled={disableAll}>Park</Button>
               <CancelButton href={'/movies/list'}>Cancel</CancelButton>
           </Wrapper>
       )
