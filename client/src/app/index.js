@@ -11,6 +11,7 @@ function App() {
         <Router>
             <NavBar />
             <Switch>
+                <Route path="/" exact component={ParkingLotMap} />
                 <Route path="/parking-lot" exact component={ParkingLotMap} />
                 <Route path="/parking-lot/generate" exact component={GenerateParkingLot} />
                 <Route path="/occupants" exact component={OccupantList} />
